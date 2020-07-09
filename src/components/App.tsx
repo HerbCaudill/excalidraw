@@ -1597,7 +1597,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       this.state,
       x,
       y,
-      this.state.zoom,
     );
 
     if (element && isTextElement(element) && !element.isDeleted) {
@@ -1734,7 +1733,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         this.state,
         sceneX,
         sceneY,
-        this.state.zoom,
       );
 
       const selectedGroupId =
@@ -1949,7 +1947,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       this.state,
       scenePointerX,
       scenePointerY,
-      this.state.zoom,
     );
     if (this.state.elementType === "text") {
       document.documentElement.style.cursor = isTextElement(hitElement)
@@ -2376,7 +2373,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
             this.state,
             pointerDownState.origin.x,
             pointerDownState.origin.y,
-            this.state.zoom,
           );
 
         this.maybeClearSelectionWhenHittingElement(
@@ -3171,7 +3167,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       this.state,
       pointerCoords.x,
       pointerCoords.y,
-      this.state.zoom,
       (element) => element !== linearElement,
     );
     return isBindableElement(hoveredElement) ? hoveredElement : null;
@@ -3288,13 +3283,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     );
 
     const elements = globalSceneState.getElements();
-    const element = getElementAtPosition(
-      elements,
-      this.state,
-      x,
-      y,
-      this.state.zoom,
-    );
+    const element = getElementAtPosition(elements, this.state, x, y);
     if (!element) {
       ContextMenu.push({
         options: [
