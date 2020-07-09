@@ -140,7 +140,11 @@ import { mutateElement, newElementWith } from "../element/mutateElement";
 import { invalidateShapeForElement } from "../renderer/renderElement";
 import { unstable_batchedUpdates } from "react-dom";
 import { SceneStateCallbackRemover } from "../scene/globalScene";
-import { isLinearElement, isBindableElement } from "../element/typeChecks";
+import {
+  isLinearElement,
+  isBindableElement,
+  isLinearElementType,
+} from "../element/typeChecks";
 import { actionFinalize, actionDeleteSelected } from "../actions";
 import {
   restoreUsernameFromLocalStorage,
@@ -1814,12 +1818,13 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       }
     }
 
-    const { x: scenePointerX, y: scenePointerY } = viewportCoordsToSceneCoords(
+    const scenePointer = viewportCoordsToSceneCoords(
       event,
       this.state,
       this.canvas,
       window.devicePixelRatio,
     );
+    const { x: scenePointerX, y: scenePointerY } = scenePointer;
 
     if (
       this.state.editingLinearElement &&
@@ -1895,6 +1900,10 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         }
       }
       return;
+    }
+
+    if (isLinearElementType(this.state.elementType)) {
+      this.maybeSuggestBinding(scenePointer);
     }
 
     const hasDeselectedButton = Boolean(event.buttons);
@@ -2802,7 +2811,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
             });
           }
         }
-        this.maybeSuggestBinding(draggingElement, pointerCoords);
+        this.maybeSuggestBinding(pointerCoords, draggingElement);
       } else if (draggingElement.type === "selection") {
         dragNewElement(
           draggingElement,
@@ -3101,15 +3110,15 @@ class App extends React.Component<ExcalidrawProps, AppState> {
   }
 
   private maybeSuggestBinding = (
-    linearElement: ExcalidrawLinearElement,
     pointerCoords: {
       x: number;
       y: number;
     },
+    linearElement?: ExcalidrawLinearElement,
   ): void => {
     const hoveredBindableElement = this.getHoveredElementForBinding(
-      linearElement,
       pointerCoords,
+      linearElement,
     );
     this.setState({ hoveredBindableElement });
   };
@@ -3142,8 +3151,8 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     pointerCoords: { x: number; y: number },
   ): void => {
     const hoveredElement = this.getHoveredElementForBinding(
-      linearElement,
       pointerCoords,
+      linearElement,
     );
     if (hoveredElement != null) {
       mutateElement(linearElement, {
@@ -3160,8 +3169,8 @@ class App extends React.Component<ExcalidrawProps, AppState> {
   };
 
   private getHoveredElementForBinding = (
-    linearElement: ExcalidrawLinearElement,
     pointerCoords: { x: number; y: number },
+    linearElement: ExcalidrawLinearElement | null | undefined,
   ): NonDeleted<ExcalidrawBindableElement> | null => {
     const hoveredElement = getElementAtPosition(
       globalSceneState.getElements(),
