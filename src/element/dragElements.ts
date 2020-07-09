@@ -1,8 +1,15 @@
-import { NonDeletedExcalidrawElement } from "./types";
+import {
+  NonDeletedExcalidrawElement,
+  ExcalidrawLinearElement,
+  NonDeleted,
+} from "./types";
 import { getCommonBounds } from "./bounds";
 import { mutateElement } from "./mutateElement";
 import { SHAPES } from "../shapes";
 import { getPerfectElementSize } from "./sizeHelpers";
+import { globalSceneState } from "../scene";
+import { Point } from "../types";
+import { LinearElementEditor } from "./linearElementEditor";
 
 export const dragSelectedElements = (
   selectedElements: NonDeletedExcalidrawElement[],
@@ -10,12 +17,46 @@ export const dragSelectedElements = (
   pointerY: number,
 ) => {
   const [x1, y1] = getCommonBounds(selectedElements);
+  const offset = { x: pointerX - x1, y: pointerY - y1 };
   selectedElements.forEach((element) => {
     mutateElement(element, {
-      x: pointerX + element.x - x1,
-      y: pointerY + element.y - y1,
+      x: element.x + offset.x,
+      y: element.y + offset.y,
     });
+    updateBoundElementsOnDrag(element, offset);
   });
+};
+
+const updateBoundElementsOnDrag = (
+  draggedElement: NonDeletedExcalidrawElement,
+  offset: { x: number; y: number },
+) => {
+  globalSceneState
+    .getNonDeletedElements(draggedElement.boundElementIDs ?? [])
+    .forEach((boundElement) => {
+      boundElement = boundElement as NonDeleted<ExcalidrawLinearElement>;
+      // TODO: simplify by adding offsetPoint to LinearElementEditor
+      if (boundElement.startBoundElementID === draggedElement.id) {
+        const [x, y] = boundElement.points[0];
+        const moved: Point = [x + offset.x, y + offset.y];
+        // mutateElement(boundElement, {
+        //   points: [moved].concat(boundElement.points.slice(1)),
+        // });
+        LinearElementEditor.movePoint(boundElement, 0, moved);
+      }
+      if (boundElement.endBoundElementID === draggedElement.id) {
+        const [x, y] = boundElement.points[boundElement.points.length - 1];
+        const moved: Point = [x + offset.x, y + offset.y];
+        // mutateElement(boundElement, {
+        //   points: boundElement.points.slice(-1).concat([moved]),
+        // });
+        LinearElementEditor.movePoint(
+          boundElement,
+          boundElement.points.length - 1,
+          moved,
+        );
+      }
+    });
 };
 
 export const getDragOffsetXY = (

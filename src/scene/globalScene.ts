@@ -26,10 +26,12 @@ class GlobalScene {
     [id: string]: ExcalidrawElement;
   } = {};
 
+  // TODO: getAllElementsIncludingDeleted
   getElementsIncludingDeleted() {
     return this.elements;
   }
 
+  // TODO: getAllNonDeletedElements
   getElements(): readonly NonDeletedExcalidrawElement[] {
     return this.nonDeletedElements;
   }
@@ -46,6 +48,20 @@ class GlobalScene {
       return element;
     }
     return null;
+  }
+
+  // TODO: Rename methods here, this is confusing
+  getNonDeletedElements(
+    ids: readonly ExcalidrawElement["id"][],
+  ): NonDeleted<ExcalidrawElement>[] {
+    const result: NonDeleted<ExcalidrawElement>[] = [];
+    ids.forEach((id) => {
+      const element = this.getNonDeletedElement(id);
+      if (element != null) {
+        result.push(element);
+      }
+    });
+    return result;
   }
 
   replaceAllElements(nextElements: readonly ExcalidrawElement[]) {
