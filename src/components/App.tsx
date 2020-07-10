@@ -1841,6 +1841,10 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       }
     }
 
+    if (isLinearElementType(this.state.elementType)) {
+      this.maybeSuggestBinding(scenePointer);
+    }
+
     if (this.state.multiElement) {
       const { multiElement } = this.state;
       const { x: rx, y: ry } = multiElement;
@@ -1899,11 +1903,8 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           });
         }
       }
-      return;
-    }
 
-    if (isLinearElementType(this.state.elementType)) {
-      this.maybeSuggestBinding(scenePointer);
+      return;
     }
 
     const hasDeselectedButton = Boolean(event.buttons);
@@ -2815,7 +2816,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
             });
           }
         }
-        this.maybeSuggestBinding(pointerCoords, draggingElement);
+        this.maybeSuggestBinding(pointerCoords);
       } else if (draggingElement.type === "selection") {
         dragNewElement(
           draggingElement,
@@ -3113,16 +3114,12 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     });
   }
 
-  private maybeSuggestBinding = (
-    pointerCoords: {
-      x: number;
-      y: number;
-    },
-    linearElement?: ExcalidrawLinearElement,
-  ): void => {
+  private maybeSuggestBinding = (pointerCoords: {
+    x: number;
+    y: number;
+  }): void => {
     const hoveredBindableElement = this.getHoveredElementForBinding(
       pointerCoords,
-      linearElement,
     );
     this.setState({ hoveredBindableElement });
   };
@@ -3154,10 +3151,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     startOrEndBoundElementIDField: "startBoundElementID" | "endBoundElementID",
     pointerCoords: { x: number; y: number },
   ): NonDeleted<ExcalidrawBindableElement> | null => {
-    const hoveredElement = this.getHoveredElementForBinding(
-      pointerCoords,
-      linearElement,
-    );
+    const hoveredElement = this.getHoveredElementForBinding(pointerCoords);
     if (hoveredElement != null) {
       mutateElement(linearElement, {
         [startOrEndBoundElementIDField]: hoveredElement.id,
@@ -3173,17 +3167,16 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     return hoveredElement;
   };
 
-  private getHoveredElementForBinding = (
-    pointerCoords: { x: number; y: number },
-    linearElement: ExcalidrawLinearElement | null | undefined,
-  ): NonDeleted<ExcalidrawBindableElement> | null => {
+  private getHoveredElementForBinding = (pointerCoords: {
+    x: number;
+    y: number;
+  }): NonDeleted<ExcalidrawBindableElement> | null => {
     const hoveredElement = getElementAtPosition(
       globalSceneState.getElements(),
       this.state,
       pointerCoords.x,
       pointerCoords.y,
       (element, _, x, y) =>
-        element !== linearElement &&
         isBindableElement(element) &&
         bindingBorderTest(element, this.state, x, y),
     );
