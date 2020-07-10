@@ -2539,7 +2539,10 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       mutateElement(element, {
         points: [...element.points, [0, 0]],
       });
-      this.maybeBindStartOfLinearElement(element, pointerDownState.origin);
+      const boundElement = this.maybeBindStartOfLinearElement(
+        element,
+        pointerDownState.origin,
+      );
       globalSceneState.replaceAllElements([
         ...globalSceneState.getElementsIncludingDeleted(),
         element,
@@ -2547,6 +2550,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       this.setState({
         draggingElement: element,
         editingElement: element,
+        boundElement,
       });
     }
   };
@@ -3126,8 +3130,8 @@ class App extends React.Component<ExcalidrawProps, AppState> {
   private maybeBindStartOfLinearElement = (
     linearElement: ExcalidrawLinearElement,
     pointerCoords: { x: number; y: number },
-  ): void => {
-    this.maybeBindLinearElement(
+  ): NonDeleted<ExcalidrawBindableElement> | null => {
+    return this.maybeBindLinearElement(
       linearElement,
       "startBoundElementID",
       pointerCoords,
@@ -3149,7 +3153,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     linearElement: ExcalidrawLinearElement,
     startOrEndBoundElementIDField: "startBoundElementID" | "endBoundElementID",
     pointerCoords: { x: number; y: number },
-  ): void => {
+  ): NonDeleted<ExcalidrawBindableElement> | null => {
     const hoveredElement = this.getHoveredElementForBinding(
       pointerCoords,
       linearElement,
@@ -3165,7 +3169,8 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         ],
       });
     }
-    this.setState({ hoveredBindableElement: null });
+    this.setState({ hoveredBindableElement: null, boundElement: null });
+    return hoveredElement;
   };
 
   private getHoveredElementForBinding = (

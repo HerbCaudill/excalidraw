@@ -16,6 +16,7 @@ export const getDefaultAppState = (): AppState => {
     resizingElement: null,
     multiElement: null,
     editingElement: null,
+    boundElement: null,
     hoveredBindableElement: null,
     editingLinearElement: null,
     elementType: "selection",
