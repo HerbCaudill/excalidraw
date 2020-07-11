@@ -85,7 +85,7 @@ export const actionFinalize = register({
         }
       }
 
-      if (!isLoop) {
+      if (!isLoop && multiPointElement.points.length > 1) {
         const [x, y] = LinearElementEditor.getPointAtIndexGlobalCoordinates(
           multiPointElement,
           -1,
