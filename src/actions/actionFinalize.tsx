@@ -9,7 +9,7 @@ import { register } from "./register";
 import { mutateElement } from "../element/mutateElement";
 import { isPathALoop } from "../math";
 import { LinearElementEditor } from "../element/linearElementEditor";
-import { maybeBindEndOfLinearElement } from "../element/binding";
+import { maybeBindLinearElement } from "../element/binding";
 
 export const actionFinalize = register({
   name: "finalize",
@@ -90,7 +90,7 @@ export const actionFinalize = register({
           multiPointElement,
           -1,
         );
-        maybeBindEndOfLinearElement(multiPointElement, appState, { x, y });
+        maybeBindLinearElement(multiPointElement, appState, { x, y });
       }
 
       if (!appState.elementLocked) {

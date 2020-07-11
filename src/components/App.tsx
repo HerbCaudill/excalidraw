@@ -155,9 +155,8 @@ import {
   getSelectedGroupIdForElement,
 } from "../groups";
 import {
-  maybeBindStartOfLinearElement,
   getHoveredElementForBinding,
-  maybeBindEndOfLinearElement,
+  maybeBindLinearElement,
 } from "../element/binding";
 
 /**
@@ -2535,8 +2534,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       mutateElement(element, {
         points: [...element.points, [0, 0]],
       });
-      const boundElement = maybeBindStartOfLinearElement(
-        element,
+      const boundElement = getHoveredElementForBinding(
         this.state,
         pointerDownState.origin,
       );
@@ -2984,11 +2982,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
             editingElement: this.state.draggingElement,
           });
         } else if (pointerDownState.drag.hasOccurred && !multiElement) {
-          maybeBindEndOfLinearElement(
-            draggingElement,
-            this.state,
-            pointerCoords,
-          );
+          maybeBindLinearElement(draggingElement, this.state, pointerCoords);
           this.setState({ hoveredBindableElement: null, boundElement: null });
           if (!elementLocked) {
             resetCursor();
