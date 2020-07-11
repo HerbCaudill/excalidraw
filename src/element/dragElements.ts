@@ -8,7 +8,6 @@ import { mutateElement } from "./mutateElement";
 import { SHAPES } from "../shapes";
 import { getPerfectElementSize } from "./sizeHelpers";
 import { globalSceneState } from "../scene";
-import { Point } from "../types";
 import { LinearElementEditor } from "./linearElementEditor";
 
 export const dragSelectedElements = (
@@ -35,25 +34,14 @@ const updateBoundElementsOnDrag = (
     .getNonDeletedElements(draggedElement.boundElementIds ?? [])
     .forEach((boundElement) => {
       boundElement = boundElement as NonDeleted<ExcalidrawLinearElement>;
-      // TODO: simplify by adding offsetPoint to LinearElementEditor
       if (boundElement.startBoundElementID === draggedElement.id) {
-        const [x, y] = boundElement.points[0];
-        const moved: Point = [x + offset.x, y + offset.y];
-        // mutateElement(boundElement, {
-        //   points: [moved].concat(boundElement.points.slice(1)),
-        // });
-        LinearElementEditor.movePoint(boundElement, 0, moved);
+        LinearElementEditor.movePointByOffset(boundElement, 0, offset);
       }
       if (boundElement.endBoundElementID === draggedElement.id) {
-        const [x, y] = boundElement.points[boundElement.points.length - 1];
-        const moved: Point = [x + offset.x, y + offset.y];
-        // mutateElement(boundElement, {
-        //   points: boundElement.points.slice(-1).concat([moved]),
-        // });
-        LinearElementEditor.movePoint(
+        LinearElementEditor.movePointByOffset(
           boundElement,
           boundElement.points.length - 1,
-          moved,
+          offset,
         );
       }
     });
