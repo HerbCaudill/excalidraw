@@ -9,9 +9,11 @@ import { isBindableElement } from "./typeChecks";
 import { bindingBorderTest, intersectElementWithLine } from "./collision";
 import { mutateElement } from "./mutateElement";
 import { centerPoint, distanceBetweenPoints } from "../math";
+import { LinearElementEditor } from "./linearElementEditor";
+import { pointRelativeTo } from "./bounds";
 
 export const maybeBindLinearElement = (
-  linearElement: ExcalidrawLinearElement,
+  linearElement: NonDeleted<ExcalidrawLinearElement>,
   appState: AppState,
   pointerCoords: { x: number; y: number },
 ): void => {
@@ -25,7 +27,7 @@ export const maybeBindLinearElement = (
 };
 
 const bindLinearElement = (
-  linearElement: ExcalidrawLinearElement,
+  linearElement: NonDeleted<ExcalidrawLinearElement>,
   hoveredElement: ExcalidrawBindableElement,
   startOrEnd: "start" | "end",
 ): void => {
@@ -61,28 +63,38 @@ export const getHoveredElementForBinding = (
 };
 
 const calculateFocusPointAndGap = (
-  linearElement: ExcalidrawLinearElement,
+  linearElement: NonDeleted<ExcalidrawLinearElement>,
   hoveredElement: ExcalidrawBindableElement,
   startOrEnd: "start" | "end",
 ): { focusPoint: Point; gap: number } => {
   const direction = startOrEnd === "start" ? -1 : 1;
   const edgePointIndex = direction === -1 ? 0 : linearElement.points.length - 1;
   const adjacentPointIndex = edgePointIndex - direction;
-  const edgePoint = linearElement.points[edgePointIndex];
-  const adjacentPoint = linearElement.points[adjacentPointIndex];
-  const interesections = intersectElementWithLine(
+  const edgePoint = LinearElementEditor.getPointAtIndexGlobalCoordinates(
+    linearElement,
+    edgePointIndex,
+  );
+  const adjacentPoint = LinearElementEditor.getPointAtIndexGlobalCoordinates(
+    linearElement,
+    adjacentPointIndex,
+  );
+  const intersections = intersectElementWithLine(
     hoveredElement,
     adjacentPoint,
     edgePoint,
   );
-  if (interesections.length === 0) {
+  if (intersections.length === 0) {
     // The linear element is not pointing at the shape, just bind to
     // the position of the edge point
     return { focusPoint: edgePoint, gap: 0 };
   }
-  const [intersection1, intersection2] = interesections;
+
+  const [intersection1, intersection2] = intersections;
   return {
-    focusPoint: centerPoint(intersection1, intersection2),
+    focusPoint: pointRelativeTo(
+      hoveredElement,
+      centerPoint(intersection1, intersection2),
+    ),
     gap: Math.min(
       distanceBetweenPoints(intersection1, edgePoint),
       distanceBetweenPoints(intersection2, edgePoint),
