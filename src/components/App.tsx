@@ -1476,6 +1476,11 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     if (isToolIcon(document.activeElement)) {
       document.activeElement.blur();
     }
+    if (!isLinearElementType(elementType)) {
+      this.setState({
+        hoveredBindableElement: null,
+      });
+    }
     if (elementType !== "selection") {
       this.setState({
         elementType,
