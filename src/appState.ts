@@ -79,6 +79,7 @@ const APP_STATE_STORAGE_CONF = (<
 >(
   config: { [K in keyof T]: K extends keyof AppState ? T[K] : never },
 ) => config)({
+  boundElement: { browser: false, export: false },
   collaborators: { browser: false, export: false },
   currentItemBackgroundColor: { browser: true, export: false },
   currentItemFillStyle: { browser: true, export: false },
@@ -103,6 +104,7 @@ const APP_STATE_STORAGE_CONF = (<
   exportBackground: { browser: true, export: false },
   gridSize: { browser: true, export: true },
   height: { browser: false, export: false },
+  hoveredBindableElement: { browser: false, export: false },
   isCollaborating: { browser: false, export: false },
   isLibraryOpen: { browser: false, export: false },
   isLoading: { browser: false, export: false },
