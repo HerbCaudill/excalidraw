@@ -54,6 +54,13 @@ export const hitTest = (
   return hitTestPointAgainstElement({ element, point, threshold, check });
 };
 
+export const bindingThreshold = (element: NonDeletedExcalidrawElement) => {
+  const smallerDimension = Math.min(element.width, element.height);
+  // We make the bindable boundary bigger for bigger elements
+  const threshold = Math.max(15, Math.min(0.25 * smallerDimension, 80));
+  return threshold;
+};
+
 export const bindingBorderTest = (
   element: NonDeletedExcalidrawElement,
   appState: AppState,
@@ -65,10 +72,7 @@ export const bindingBorderTest = (
     case "text":
     case "diamond":
     case "ellipse":
-      const smallerDimension = Math.min(element.width, element.height);
-      // We make the bindable boundary bigger for bigger elements
-      const threshold =
-        Math.max(15, Math.min(0.25 * smallerDimension, 80)) / appState.zoom;
+      const threshold = bindingThreshold(element) / appState.zoom;
       const check = isOutsideCheck;
       const point: Point = [x, y];
       return hitTestPointAgainstElement({ element, point, threshold, check });
