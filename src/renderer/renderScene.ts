@@ -37,6 +37,7 @@ import {
   getSelectedGroupIds,
   getElementsInGroup,
 } from "../groups";
+import { bindingThreshold } from "../element/collision";
 
 type HandlerRectanglesRet = keyof ReturnType<typeof handlerRectangles>;
 
@@ -208,6 +209,11 @@ export const renderScene = (
     );
   }
 
+  // Paint highlight on bound or bindable elements
+  [appState.hoveredBindableElement, appState.boundElement]
+    .filter((element) => element != null)
+    .forEach((element) => renderTargetHighlight(context, sceneState, element!));
+
   // Paint visible elements
   const visibleElements = elements.filter((element) =>
     isVisibleElement(
@@ -239,25 +245,6 @@ export const renderScene = (
       sceneState,
     );
   }
-
-  [appState.hoveredBindableElement, appState.boundElement]
-    .filter((element) => element != null)
-    .forEach((element) => {
-      const [
-        elementX1,
-        elementY1,
-        elementX2,
-        elementY2,
-      ] = getElementAbsoluteCoords(element!);
-      renderSelectionBorder(context, sceneState, {
-        angle: element!.angle,
-        elementX1,
-        elementY1,
-        elementX2,
-        elementY2,
-        selectionColors: [oc.black],
-      });
-    });
 
   // Paint selected elements
   if (
@@ -617,6 +604,43 @@ const renderSelectionBorder = (
   context.strokeStyle = strokeStyle;
   context.lineWidth = lineWidth;
   context.setLineDash(initialLineDash);
+  context.translate(-sceneState.scrollX, -sceneState.scrollY);
+};
+
+const renderTargetHighlight = (
+  context: CanvasRenderingContext2D,
+  sceneState: SceneState,
+  targetElement: NonDeletedExcalidrawElement,
+) => {
+  // preserve context settings to restore later
+  const originalStrokeStyle = context.strokeStyle;
+  const originalLineWidth = context.lineWidth;
+
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(targetElement);
+  const width = x2 - x1;
+  const height = y2 - y1;
+  const threshold = bindingThreshold(targetElement);
+
+  context.strokeStyle = "rgba(0,0,0,.05)";
+  context.lineWidth = threshold / sceneState.zoom;
+  context.translate(sceneState.scrollX, sceneState.scrollY);
+
+  const padding = (4 + threshold / 2) / sceneState.zoom;
+
+  strokeRectWithRotation(
+    context,
+    x1 - padding,
+    y1 - padding,
+    width + padding * 2,
+    height + padding * 2,
+    x1 + width / 2,
+    y1 + height / 2,
+    targetElement.angle,
+  );
+
+  // restore context settings
+  context.strokeStyle = originalStrokeStyle;
+  context.lineWidth = originalLineWidth;
   context.translate(-sceneState.scrollX, -sceneState.scrollY);
 };
 
